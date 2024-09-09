@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - evgeni-cicd-pipeline
 
 jobs:
   build:
