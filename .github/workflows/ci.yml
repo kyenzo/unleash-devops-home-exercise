@@ -36,18 +36,37 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Deploy Helm
-        uses: bitovi/github-actions-deploy-eks-helm@v1.2.10
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
-          cluster-name: evgeni-eks-cluster
-          config-files: helm-charts/file-checker/values.yaml
-          chart-path: helm-charts/file-checker
-          namespace: file-checker
-          name: file-checker
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --name evgeni-eks-cluster --region eu-west-1
+
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install node-s3-check ./helm-charts/file-checker \
+            --namespace file-checker \
+            --create-namespace \
+            --set image.repository=ghcr.io/${{ github.repository }}/node-s3-check \
+            --set image.tag=latest \
+            --set image.pullPolicy=Always \
+            --set hpa.enabled=true \
+            --set hpa.minReplicas=2 \
+            --set hpa.maxReplicas=10 \
+            --set hpa.targetCPUUtilizationPercentage=50
 
