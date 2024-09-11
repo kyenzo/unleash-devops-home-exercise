@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bucket-config
+  namespace: file-checker
+data:
+  bucketName: evgeni-test-bucket

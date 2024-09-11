@@ -5,7 +5,13 @@ import { env } from "process";
 const app = express();
 const port =  env.PORT || 3000;
 
-const s3 = new S3();
+const s3 = new S3({
+  region: env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY || '',
+  },
+});
 
 const bucketName = env.BUCKET_NAME
 
