@@ -59,7 +59,7 @@ jobs:
 
       - name: Deploy with Helm
         run: |
-          helm upgrade --install node-s3-check ./helm-charts/file-checker \
+          helm upgrade --install node-s3-check helm-charts/file-checker \
             --namespace file-checker \
             --create-namespace \
             --set image.repository=ghcr.io/${{ github.repository }}/node-s3-check \
