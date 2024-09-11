@@ -47,6 +47,6 @@ jobs:
         run: |
             aws ecs update-service \
             --cluster evgeni-ecs-cluster \
-            --service your-ecs-service-name \
+            --service evgeni-test-service \
             --force-new-deployment \
             --region us-east-1

@@ -1,78 +1,107 @@
 provider "aws" {
-  region = "us-east-1"
+  region = var.region
 }
 
-resource "aws_security_group" "evgeni_sg" {
-  vpc_id = aws_vpc.evgeni_vpc.id
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+data "aws_availability_zones" "available" {
+  filter {
+    name   = "opt-in-status"
+    values = ["opt-in-not-required"]
   }
 }
 
-# Create ECS Cluster
-resource "aws_ecs_cluster" "evgeni_ecs_cluster" {
-  name = "evgeni-ecs-cluster"
+locals {
+  cluster_name = "evgeni-eks-cluster"
 }
 
-resource "aws_iam_role" "ecs_instance_role" {
-  name = "ecs-instance-role"
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+}
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.8.1"
+
+  name = "evgeni-vpc"
+
+  cidr = "10.0.0.0/16"
+  azs  = slice(data.aws_availability_zones.available.names, 0, 3)
+
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+
+  enable_nat_gateway   = true
+  single_nat_gateway   = true
+  enable_dns_hostnames = true
+
+  public_subnet_tags = {
+    "kubernetes.io/role/elb" = 1
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/role/internal-elb" = 1
+  }
+}
+
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "20.8.5"
+
+  cluster_name    = local.cluster_name
+  cluster_version = "1.29"
+
+  cluster_endpoint_public_access           = true
+  enable_cluster_creator_admin_permissions = true
+
+  cluster_addons = {
+    aws-ebs-csi-driver = {
+      service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
     }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_instance_policy_attach" {
-  role       = aws_iam_role.ecs_instance_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
-}
-
-resource "aws_iam_instance_profile" "ecs_instance_profile" {
-  name = "ecs_instance_profile"
-  role = aws_iam_role.ecs_instance_role.name
-}
-
-resource "aws_instance" "ecs_instance" {
-  count                 = 2
-  ami                   = "ami-0a313d6098716f372"  # Ubuntu 20.04 LTS (us-east-1)
-  instance_type         = "t3.micro"
-  subnet_id             = aws_subnet.evgeni_subnet.id
-  security_groups       = [aws_security_group.evgeni_sg.id]
-  iam_instance_profile  = aws_iam_instance_profile.ecs_instance_profile.name
-  key_name              = "evgeni-unleash-instance-key"
-
-  user_data = <<-EOF
-              #!/bin/bash
-              sudo apt update
-              sudo apt install -y ecs-init
-              sudo systemctl enable --now ecs
-              echo ECS_CLUSTER=${aws_ecs_cluster.evgeni_ecs_cluster.name} >> /etc/ecs/ecs.config
-              EOF
-
-  tags = {
-    Name = "evgeni-ecs-node"
   }
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+
+  eks_managed_node_group_defaults = {
+    ami_type = "AL2_x86_64"
+
+  }
+
+  eks_managed_node_groups = {
+    one = {
+      name = "node-group-1"
+
+      instance_types = ["t3.small"]
+
+      min_size     = 1
+      max_size     = 3
+      desired_size = 2
+    }
+
+    two = {
+      name = "node-group-2"
+
+      instance_types = ["t3.small"]
+
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
+    }
+  }
+}
+
+
+data "aws_iam_policy" "ebs_csi_policy" {
+  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+
+module "irsa-ebs-csi" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version = "5.39.0"
+
+  create_role                   = true
+  role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
+  provider_url                  = module.eks.oidc_provider
+  role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
+  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
