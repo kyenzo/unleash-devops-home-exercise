@@ -35,27 +35,26 @@ Enhance the CI pipeline to include a CD stage:
 ---
 
 # Work Done
+## Server:
+1. Added AWS Secrets support to allow access to s3
 
 ## Docker image
-1. Created a basic dockerfile from 18-alpine.
+1. Created a basic Dockerfile from 18-alpine.
 2. Work env configuration and missing dependencies.
 3. Built a local docker image.
 4. Run a container and see if it doesn't crash
 
 ## Helm
 1. Create a helm chart for the application
-2. Use simple loadbalancer service to expose the app
-
+2. Use simple load balancer service to expose the app
 
 ## Terraform
 1. Create an S3 bucket: evgeni-test-bucket with a sample.txt file
-2. create EKS cluster
-3. create network components
-4. create security group resources
+2. Create EKS cluster
+3. Create network components
+4. Create security group resources
 
 ## Github
-
-* currently here.
 1. Create pipeline secrets
     * AWS_ACCESS_KEY_ID
     * AWS_SECRET_ACCESS_KEY
