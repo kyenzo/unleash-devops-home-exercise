@@ -37,19 +37,21 @@ Enhance the CI pipeline to include a CD stage:
 # Work Done
 
 ## Docker image
-
 1. Created a basic dockerfile from 18-alpine.
 2. Work env configuration and missing dependencies.
 3. Built a local docker image.
 4. Run a container and see if it doesn't crash
 
-## AWS
-1. Create an S3 bucket: evgeni-test-bucket with a sample.txt file
+## Helm
+1. Create a helm chart for the application
+2. Use simple loadbalancer service to expose the app
+
 
 ## Terraform
-1. create ECS cluster
-2. create network components
-3. create security group resources
+1. Create an S3 bucket: evgeni-test-bucket with a sample.txt file
+2. create EKS cluster
+3. create network components
+4. create security group resources
 
 ## Github
 
@@ -59,5 +61,8 @@ Enhance the CI pipeline to include a CD stage:
     * AWS_SECRET_ACCESS_KEY
 2. Create a basic CI pipeline
 3. Insert CD functionality
+
+## Final
+1. Test app
 
 ---
