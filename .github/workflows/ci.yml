@@ -48,5 +48,6 @@ jobs:
           cluster-name: evgeni-eks-cluster
           config-files: helm-charts/file-checker/values.yaml
           chart-path: helm-charts/file-checker
-          namespace: apps
+          namespace: file-checker
           name: file-checker
+

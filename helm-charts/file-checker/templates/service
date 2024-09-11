@@ -5,9 +5,9 @@ metadata:
   labels:
     app: {{ include "node-s3-check.name" . }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.service.type | default "ClusterIP" }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.service.port | default 80 }}
       targetPort: 3000
   selector:
     app: {{ include "node-s3-check.name" . }}
