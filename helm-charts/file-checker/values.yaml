@@ -1,0 +1,12 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/kyenzo/unleash-devops-home-exercise/node-s3-check
+  pullPolicy: IfNotPresent
+  tag: latest
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources: {}
