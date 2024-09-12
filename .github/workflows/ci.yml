@@ -60,6 +60,17 @@ jobs:
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+      - name: Install NGINX Ingress Controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+      - name: Wait for Ingress Controller to be ready
+        run: |
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=120s
+
       - name: Deploy with Helm
         run: |
           helm upgrade --install node-s3-check helm-charts/file-checker \
@@ -68,5 +79,9 @@ jobs:
             --set image.repository=ghcr.io/${{ github.repository }}/node-s3-check \
             --set image.tag=latest \
             --set image.pullPolicy=Always \
+            --set ingress.enabled=true \
+            --set ingress.hosts[0].host=a345fecb94ec34bcfb6aa2856243c126-1912990450.eu-west-1.elb.amazonaws.com \
+            --set ingress.hosts[0].paths[0]=/ \
+            --set ingress.hosts[0].paths[1]=/check-file
 
 

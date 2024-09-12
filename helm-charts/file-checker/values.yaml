@@ -16,3 +16,11 @@ hpa:
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
+
+ingress:
+  enabled: true
+  hosts:
+    - host: a345fecb94ec34bcfb6aa2856243c126-1912990450.eu-west-1.elb.amazonaws.com
+      paths:
+        - /
+        - /check-file

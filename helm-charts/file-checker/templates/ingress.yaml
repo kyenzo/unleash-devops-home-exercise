@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "node-s3-check.fullname" . }}-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: <your-domain-or-ip>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "node-s3-check.fullname" . }}
+                port:
+                  number: 80
+          - path: /check-file
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "node-s3-check.fullname" . }}
+                port:
+                  number: 80
