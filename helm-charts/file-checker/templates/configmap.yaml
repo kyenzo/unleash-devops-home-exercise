@@ -4,4 +4,4 @@ metadata:
   name: bucket-config
   namespace: file-checker
 data:
-  bucketName: evgeni-test-bucket
+  bucketName: evgeni-bucket-2
