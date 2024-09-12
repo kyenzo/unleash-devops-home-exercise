@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "node-s3-check.fullname" . }}-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: aaba41a6d356c401680058176d35d045-1367770135.eu-west-1.elb.amazonaws.com
+      http:
+        paths:
+          - path: /*
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "node-s3-check.fullname" . }}
+                port:
+                  number: 80

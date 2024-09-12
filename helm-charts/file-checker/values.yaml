@@ -16,3 +16,11 @@ hpa:
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
+
+ingress:
+  enabled: true
+  hosts:
+    - host: aa0d4c62e01554527a0eb869fd5a92bd-1991468218.eu-west-1.elb.amazonaws.com
+      paths:
+        - /*
+
