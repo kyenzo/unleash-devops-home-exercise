@@ -17,10 +17,10 @@ hpa:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
 
-ingress:
-  enabled: true
-  hosts:
-    - host: aaba41a6d356c401680058176d35d045-1367770135.eu-west-1.elb.amazonaws.com
-      paths:
-        - /
-        - /check-file
+# ingress:
+#   enabled: true
+#   hosts:
+#     - host: aaba41a6d356c401680058176d35d045-1367770135.eu-west-1.elb.amazonaws.com
+#       paths:
+#         - /
+#         - /check-file
