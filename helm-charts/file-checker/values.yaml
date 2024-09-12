@@ -20,7 +20,7 @@ hpa:
 ingress:
   enabled: true
   hosts:
-    - host: a345fecb94ec34bcfb6aa2856243c126-1912990450.eu-west-1.elb.amazonaws.com
+    - host: aaba41a6d356c401680058176d35d045-1367770135.eu-west-1.elb.amazonaws.com
       paths:
         - /
         - /check-file
